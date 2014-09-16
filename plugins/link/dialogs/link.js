@@ -44,7 +44,7 @@
 		// Handles the event when the "Type" selection box is changed.
 		var linkTypeChanged = function() {
 				var dialog = this.getDialog(),
-					partIds = [ 'urlOptions', 'anchorOptions', 'emailOptions' ],
+					partIds = [ 'urlOptions', 'anchorOptions', 'emailOptions', 'internalOptions' ],
 					typeValue = this.getValue(),
 					uploadTab = dialog.definition.getContents( 'upload' ),
 					uploadInitiallyHidden = uploadTab && uploadTab.hidden;
@@ -125,7 +125,8 @@
 					items: [
 						[ linkLang.toUrl, 'url' ],
 						[ linkLang.toAnchor, 'anchor' ],
-						[ linkLang.toEmail, 'email' ]
+						[ linkLang.toEmail, 'email' ],
+						[ 'Intern side', 'internal' ]
 						],
 					onChange: linkTypeChanged,
 					setup: function( data ) {
@@ -426,7 +427,44 @@
 						if ( !this.getDialog().getContentElement( 'info', 'linkType' ) )
 							this.getElement().hide();
 					}
-				}
+				},
+                {
+                    type :  'vbox',
+                    id : 'internalOptions',
+                    padding : 1,
+                    children :
+                        [
+                            {
+                                id : 'internalAddress',
+                                type : 'select',
+                                label : 'Side',
+                                'default' : '/',
+                                style : 'width : 100%;',
+                                items :	editor.config.internalPages,
+                                setup : function( data ) {
+                                    if ( data.url )	{
+                                        this.setValue( data.url.url );
+                                    }
+                                    else {
+                                        if(editor.config.internalPages.length > 0){
+                                            this.setValue(editor.config.internalPages[0][1]);
+                                        }
+                                    }
+                                },
+                                commit : function( data ) {
+                                    if ( !data.internal )
+                                        data.internal = {};
+
+                                    data.internal.url = this.getValue();
+
+                                }
+                            }
+                        ],
+                    setup : function( data )
+                    {
+                        if ( !this.getDialog().getContentElement( 'info', 'linkType' ) ) this.getElement().hide();
+                    }
+                }
 				]
 			},
 				{
@@ -874,6 +912,14 @@
 						range.selectNodeContents( text );
 					}
 
+                    if(data.type == 'internal'){
+                        var internal = ( data.internal && data.internal.url ) || '';
+                        attributes.set[ 'data-cke-saved-href' ] = internal;
+                        attributes.set[ 'href' ] = internal;
+                    }
+
+                    console.log(attributes);
+
 					// Apply style.
 					var style = new CKEDITOR.style( {
 						element: 'a',
@@ -888,6 +934,13 @@
 					var element = this._.selectedElement,
 						href = element.data( 'cke-saved-href' ),
 						textView = element.getHtml();
+
+
+                    if(data.type == 'internal'){
+                        var internal = ( data.internal && data.internal.url ) || '';
+                        attributes.set[ 'data-cke-saved-href' ] = internal;
+                        attributes.set[ 'href' ] = internal;
+                    }
 
 					element.setAttributes( attributes.set );
 					element.removeAttributes( attributes.removed );

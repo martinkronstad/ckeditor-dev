@@ -8,6 +8,9 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
 	// %REMOVE_START%
+
+    config.internalPages = [['Side 1','/Side1'],['Side 2','/Side2']];
+
 	config.plugins =
 		'about,' +
 		'a11yhelp,' +

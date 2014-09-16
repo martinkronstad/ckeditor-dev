@@ -204,6 +204,7 @@
 		emailBodyRegex = /body=([^;?:@&=$,\/]*)/,
 		anchorRegex = /^#(.*)$/,
 		urlRegex = /^((?:http|https|ftp|news):\/\/)?(.*)$/,
+        internalRegex = /^\/.+/,
 		selectableTargets = /^(_(?:self|top|parent|blank))$/,
 		encodedEmailLinkRegex = /^javascript:void\(location\.href='mailto:'\+String\.fromCharCode\(([^)]+)\)(?:\+'(.*)')?\)$/,
 		functionCallProtectedEmailLinkRegex = /^javascript:([^(]+)\(([^)]+)\)$/,
@@ -426,7 +427,7 @@
 			var href = ( element && ( element.data( 'cke-saved-href' ) || element.getAttribute( 'href' ) ) ) || '',
 				compiledProtectionFunction = editor.plugins.link.compiledProtectionFunction,
 				emailProtection = editor.config.emailProtection,
-				javascriptMatch, emailMatch, anchorMatch, urlMatch,
+				javascriptMatch, emailMatch, anchorMatch, urlMatch, internalMatch,
 				retval = {};
 
 			if ( ( javascriptMatch = href.match( javascriptProtocolRegex ) ) ) {
@@ -462,7 +463,26 @@
 			}
 
 			if ( !retval.type ) {
-				if ( ( anchorMatch = href.match( anchorRegex ) ) ) {
+                if (  href && ( internalMatch = href.match( internalRegex ) ) )
+                {
+
+                    var blnFound = false;
+                    var strAddress = internalMatch[0];
+                    var i = 0;
+                    for(i=0;i<editor.config.internalPages.length;i++){
+                        if(editor.config.internalPages[i][1] == strAddress) blnFound = true;
+                    }
+                    if(blnFound){
+                        retval.type = 'internal';
+                    }
+                    else {
+                        retval.type = 'url';
+                    }
+                    retval.url = {};
+                    retval.url.protocol = "";
+                    retval.url.url = strAddress;
+                }
+                else if ( ( anchorMatch = href.match( anchorRegex ) ) ) {
 					retval.type = 'anchor';
 					retval.anchor = {};
 					retval.anchor.name = retval.anchor.id = anchorMatch[ 1 ];
